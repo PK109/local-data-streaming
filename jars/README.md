@@ -1,0 +1,1 @@
+This is a folder that contain used jar connectors for Kafka Connect service
