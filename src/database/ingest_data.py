@@ -20,6 +20,6 @@ def ingest_data(data_path, record_rate = 100):
 
 
 if __name__ == '__main__':
-    path = '/workspaces/local-data-streaming/data/'
+    path = '/workspaces/local-data-streaming/rides_data/'
     name = 'taxi_data.parquet'
     ingest_data(data_path=path+name)
