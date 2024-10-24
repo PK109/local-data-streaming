@@ -1,0 +1,1 @@
+This is a folder that contain data, that are used as input for PostgresDB and gathers all output data from streaming platform.
