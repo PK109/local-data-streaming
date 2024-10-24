@@ -12,7 +12,6 @@ services:
     ports:
       - "5432:5432"
     command: [ "postgres", "-c", "wal_level=logical" ] # requirement of kafka-connect service
-    command: [ "postgres", "-c", "wal_level=logical" ] # requirement of kafka-connect service
 
   pgadmin:
     image: dpage/pgadmin4
@@ -149,18 +148,13 @@ services:
       - kafka1
       - kafka2
       - kafka3
-      - kafka1
-      - kafka2
-      - kafka3
     environment:
-      CONNECT_BOOTSTRAP_SERVERS: kafka1:29092,kafka2:29092,kafka3:29092
       CONNECT_BOOTSTRAP_SERVERS: kafka1:29092,kafka2:29092,kafka3:29092
       CONNECT_REST_PORT: 8083
       CONNECT_GROUP_ID: "1"
       CONNECT_CONFIG_STORAGE_TOPIC: "connect-configs"
       CONNECT_OFFSET_STORAGE_TOPIC: "connect-offsets"
       CONNECT_STATUS_STORAGE_TOPIC: "connect-status"
-      CONNECT_KEY_CONVERTER: "org.apache.kafka.connect.storage.StringConverter"
       CONNECT_KEY_CONVERTER: "org.apache.kafka.connect.storage.StringConverter"
       CONNECT_VALUE_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
       CONNECT_KEY_CONVERTER_SCHEMAS_ENABLE: "false"
@@ -180,13 +174,6 @@ services:
     container_name: kafka-ui
     hostname: kafka-ui
     ports:
-      - 8080:8080
-    depends_on:
-      - kafka1
-      - kafka2
-      - kafka3
-      - schema-registry
-      - kafka-connect
       - 8080:8080
     depends_on:
       - kafka1
