@@ -168,6 +168,11 @@ services:
       - ../jars/debezium-connector-postgres:/etc/kafka-connect/jars
     ports:
       - "8083:8083"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8083"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
   
   kafka-ui:
     image: kafbat/kafka-ui
@@ -195,9 +200,13 @@ services:
     build: ../sql-client/.
     container_name: flink-client
     hostname: flink-client
-    command: bin/sql-client.sh
+    command: bin/sql-client.sh -i /opt/flink/init/FLINK_SQL_INIT.sql -f /opt/flink/init/FLINK_SQL_JOB.sql
     depends_on:
-      - jobmanager
+      kafka-connect:
+        condition: service_healthy
+      
+    volumes:
+      - ../sql-client:/opt/flink/init/
     environment:
       - |
         FLINK_PROPERTIES=
@@ -242,6 +251,17 @@ services:
         state.checkpoints.dir: file:///tmp/flink-checkpoints
         heartbeat.interval: 1000
         heartbeat.timeout: 5000
+
+  worker:
+    image: worker
+    container_name: my_python_worker
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      KAFKA_CONNECT_CONNECTOR_NAME: ${KAFKA_CONNECT_CONNECTOR_NAME}
+      KAFKA_CONNECT_IMAGE_NAME: 'kafka-connect'
+      PYTHONUNBUFFERED: 1
 
 volumes:
   flink_data:
