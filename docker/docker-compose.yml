@@ -12,6 +12,11 @@ services:
     ports:
       - "5432:5432"
     command: [ "postgres", "-c", "wal_level=logical" ] # requirement of kafka-connect service
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 2s
+      retries: 5
 
   pgadmin:
     image: dpage/pgadmin4
@@ -254,7 +259,7 @@ services:
 
   worker:
     image: worker
-    container_name: my_python_worker
+    container_name: python_worker
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -262,6 +267,11 @@ services:
       KAFKA_CONNECT_CONNECTOR_NAME: ${KAFKA_CONNECT_CONNECTOR_NAME}
       KAFKA_CONNECT_IMAGE_NAME: 'kafka-connect'
       PYTHONUNBUFFERED: 1
+    volumes:
+      - ../rides_data:/rides_data
+    depends_on:
+      postgres:
+        condition: service_healthy
 
 volumes:
   flink_data:

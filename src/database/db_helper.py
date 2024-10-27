@@ -4,8 +4,8 @@ from sqlalchemy import create_engine
 import urllib.parse
 
 # Load environment variables from the .env file to config
-def load_config():
-    load_dotenv(dotenv_path='/workspaces/local-data-streaming/.env')
+def load_config(path= '.env'):
+    load_dotenv(dotenv_path=path)
     config = {}
     config['dialect']='postgresql'
     config['host']=os.getenv("POSTGRES_HOST")
@@ -28,7 +28,7 @@ def get_engine(config):
         conn_string =f"{dialect}://{user}:{password}@{host}:{port}/{database}"
         # connecting to the PostgreSQL server
         engine = create_engine(conn_string)
-        print(f"Engine for {dialect} created.")
+        # print(f"Engine for {dialect} created.")
         return engine
     except (Exception) as error:
         print(error)
