@@ -12,7 +12,7 @@ def ingest_data(data_path, record_rate = 10):
         sql_query = 'SELECT * FROM yellow_taxi'
         df_batch = df.iloc[iter:(iter+record_rate)]
         print(f"Ingesting {len(df_batch)} records at {start_time}.", end='\t')
-        df_batch.to_sql('yellow_taxi', engine, if_exists = 'append', index=False, index_label='tpep_pickup_datetime')
+        df_batch.to_sql('yellow_taxi', engine, if_exists = 'append', index=True, index_label='tpep_pickup_datetime')
         df_sql = pd.read_sql(sql_query, engine)
         print(f'Found {len(df_sql)} records in db.')
         elapsed_time = time.time() - start_time
@@ -26,3 +26,11 @@ if __name__ == '__main__':
     name = 'taxi_data.parquet'
     print("DB Ingest is working.")  
     ingest_data(data_path=path+name)
+
+# Filtrowanie po:
+# 'tpep_pickup_datetime',
+# 'tpep_dropoff_datetime', 
+# 'trip_distance',
+# 'PULocationID',
+# 'DOLocationID',
+# 'total_amount',

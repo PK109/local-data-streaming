@@ -1,5 +1,5 @@
 import subprocess
-
+import time
 print("Main Worker successfully started.")
 subprocess.run(["python", "database/db_init.py"])
 subprocess.run(["python", "config/kafka_connect_config.py"])
