@@ -142,5 +142,6 @@ pg_data/*
 flink_data/*
 
 # Others
+*.png
 *.sh
 *.json

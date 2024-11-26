@@ -130,31 +130,14 @@ services:
       CLUSTER_ID: 'p8fFEbKGQ22B6M_Da_vCBw'
       KAFKA_LOG_DIRS: '/tmp/combined-logs'
 
-  # schema-registry:
-  #   image: confluentinc/cp-schema-registry
-  #   container_name: schema-registry
-  #   hostname: schema-registry
-  #   ports:
-  #     - "8082:8082"
-  #   environment:
-  #     SCHEMA_REGISTRY_HOST_NAME: schema-registry
-  #     SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: 'kafka1:29092,kafka2:29092,kafka3:29092'
-  #     SCHEMA_REGISTRY_LISTENERS: 'http://0.0.0.0:8082'
-  #     SCHEMA_REGISTRY_LOG4J_ROOT_LOGLEVEL: ${KAFKA_LOGLEVEL}
-  #     SCHEMA_REGISTRY_LOG4J_TOOLS_LOGLEVEL: ${KAFKA_LOGLEVEL}
-  #   depends_on:
-  #     - kafka1
-  #     - kafka2
-  #     - kafka3
-
   kafka-connect:
     image: confluentinc/cp-kafka-connect:7.7.1
     container_name: kafka-connect
     hostname: kafka-connect
-    depends_on:
-      - kafka1
-      - kafka2
-      - kafka3
+    # depends_on:
+    #   - kafka1
+    #   - kafka2
+    #   - kafka3
     environment:
       CONNECT_BOOTSTRAP_SERVERS: kafka1:29092,kafka2:29092,kafka3:29092
       CONNECT_REST_PORT: 8083
@@ -180,6 +163,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
+      start_period: 3m
   
   kafka-ui:
     image: kafbat/kafka-ui
@@ -237,6 +221,9 @@ services:
         heartbeat.timeout: 5000
         rest.flamegraph.enabled: true
         web.backpressure.refresh-interval: 10000
+        restart-strategy.type: exponential-delay
+        restart-strategy.exponential-delay.max-backoff: 20 s
+        restart-strategy.exponential-delay.reset-backoff-threshold: 1 min
 
   taskmanager:
     build: ../sql-client/.

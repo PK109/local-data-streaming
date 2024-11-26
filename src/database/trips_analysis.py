@@ -1,29 +1,58 @@
 import pandas as pd
+import numpy as np
 from db_helper import *
-import time
+import matplotlib.pyplot as plt
+
+
+def max_deviation(value):
+    output = (value - max_deviation.max).total_seconds()
+    max_deviation.count += 1
+
+    #drop highly deviated values (mimics watermark behaviour)
+    if output > 3600 or output < -14400:
+        return None
+    if output > 0: #increase max value 
+        max_deviation.increments += 1
+        max_deviation.max = value
+    return output
+
 
 def data_aggregation(data_path):
 
+    #read file
     df = pd.read_parquet(data_path)
-    df.reset_index(inplace=True, names='ServiceID')
+    len_df = len(df)
+    #initial filters
     df= df[df['trip_distance']>0]
-    df_duplicates = df[df.duplicated(subset=['tpep_pickup_datetime','tpep_dropoff_datetime'], keep=False)]
-    print(len(df_duplicates))
-    print(df_duplicates.columns)
-    print(df_duplicates.sort_values(by='tpep_pickup_datetime'))
-    df_filtered = df_duplicates.groupby(
-        by=['tpep_pickup_datetime','tpep_dropoff_datetime']).agg(
-            sum_of_totals=pd.NamedAgg(column="total_amount", aggfunc=lambda x: round(sum(x),2)),
-            sum_of_tips=pd.NamedAgg(column="tip_amount", aggfunc="sum"),
-            distance_equality=pd.NamedAgg(column="trip_distance", aggfunc=lambda x: len(set(x))==1),
-            PULocation_equality=pd.NamedAgg(column="PULocationID", aggfunc=lambda x: len(set(x))==1),
-            DOLocation_equality=pd.NamedAgg(column="DOLocationID", aggfunc=lambda x: len(set(x))==1),
-            sum_of_trips=pd.NamedAgg(column="VendorID", aggfunc="count"),
-            index_distance=pd.NamedAgg(column="ServiceID", aggfunc=lambda x: str([j-i for i, j in zip(x[:-1], x[1:])])[1:-1])
-        )
+    df= df[df['tpep_pickup_datetime'].dt.year==2024]
+    
+    #calculate time deviation for pickup time
+    #dropoff value have more deviation and would be harder to handle it by streaming analysis
+    max_deviation.max = df['tpep_pickup_datetime'].iloc[0]
+    max_deviation.increments = 0
+    max_deviation.count = 0
+    df['time_deviation'] = df['tpep_pickup_datetime'].apply(max_deviation)
+    df.dropna(subset='time_deviation', inplace=True)
 
-    df_filtered.to_csv("aggregation_file.csv")
-    df_duplicates.to_csv('duplication_file.csv')
+    # Summary of output
+    min_dev = min(df['time_deviation'])
+    max_dev = max(df['time_deviation'])
+
+    print(f"Max value have changed {max_deviation.increments} times. Cleaned dataset length: {len(df)}, while original length: {len_df}")
+    print(f"Deviation range: {min_dev} to {max_dev}")
+
+    #graphical representation
+    fig = plt.figure()
+    bin_step = 1000
+    xbins = np.arange(round(min_dev,-3), round(max_dev,-3) + bin_step, bin_step)
+    counts, bins, bars = plt.hist(df['time_deviation'], bins= xbins, edgecolor= "white")
+    
+    plt.ylim([0, 1.2 * max(counts)])
+    plt.bar_label(bars, fontsize=10, rotation=60)
+    plt.xticks(ticks=bins, rotation=60)
+    plt.xlabel("Time [in seconds]")
+    plt.title("Time deviation from last max pickup time")
+    fig.savefig('time_deviation.png')
 
 if __name__ == '__main__':
     path = '/workspaces/local-data-streaming/rides_data/'
