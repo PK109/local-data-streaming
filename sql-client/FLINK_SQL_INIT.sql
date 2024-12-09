@@ -1,6 +1,8 @@
 -- streaming mode in Flink SQL
 -- set 'execution.runtime-mode' = 'streaming';
 -- DDL statements for Flink table creation
+
+SET 'table.exec.sink.not-null-enforcer'='DROP';
 CREATE TABLE zones (
    `LocationID` INT,
    `Borough` STRING,
@@ -15,7 +17,7 @@ CREATE TABLE zones (
    'format' = 'debezium-json'
  );
 
- CREATE TABLE yellow_taxi (
+CREATE TABLE yellow_taxi (
     `VendorID` INT,
     `tpep_pickup_datetime` BIGINT,
     `tpep_dropoff_datetime` BIGINT,
@@ -44,7 +46,7 @@ CREATE TABLE zones (
     'format' = 'debezium-json'
   );
 
- CREATE TABLE joined_yellow_taxi (
+CREATE TABLE joined_yellow_taxi (
     `VendorID` INT,
     `proc_time` AS PROCTIME(),
     `tpep_pickup_datetime` BIGINT,
@@ -81,18 +83,20 @@ CREATE TABLE zones (
     'format' = 'debezium-json'
   );
 
- CREATE TABLE yellow_zones_stats(
+CREATE TABLE yellow_zones_stats(
     `window_start` TIMESTAMP(3) NOT NULL,
     `zone name` STRING NOT NULL,
-    `trips count` BIGINT NOT NULL,
+    `trips count` BIGINT,
     `last ride` TIMESTAMP_LTZ(3),
     WATERMARK FOR `last ride` as `last ride` - INTERVAL '1' HOUR,
-    `tumble earn` DOUBLE
+    `tumble earn` DOUBLE,
+    PRIMARY KEY (`window_start`, `zone name`) NOT ENFORCED
   ) WITH (
-    'connector' = 'kafka',
+    'connector' = 'upsert-kafka',
     'topic' = 'postgres_cdc.public.yellow_zones_stats',
     'properties.bootstrap.servers' = 'kafka1:29092,kafka2:29092,kafka3:29092',
     'properties.group.id' = 'ConsumerID',
-    'scan.startup.mode' = 'earliest-offset',
-    'format' = 'debezium-json'
+    'value.format' = 'json',
+    'key.format' = 'json',
+    'value.fields-include' = 'EXCEPT_KEY'
   );

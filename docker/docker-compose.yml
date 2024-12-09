@@ -33,7 +33,7 @@ services:
       - "80:80"
 
   kafka1:
-    image: confluentinc/cp-kafka
+    image: confluentinc/cp-kafka:7.7.1
     container_name: kafka1
     hostname: kafka1
     ports:
@@ -66,7 +66,7 @@ services:
       KAFKA_LOG_DIRS: '/tmp/combined-logs'
 
   kafka2:
-    image: confluentinc/cp-kafka
+    image: confluentinc/cp-kafka:7.7.1
     container_name: kafka2
     hostname: kafka2
     ports:
@@ -99,7 +99,7 @@ services:
       KAFKA_LOG_DIRS: '/tmp/combined-logs'
 
   kafka3:
-    image: confluentinc/cp-kafka
+    image: confluentinc/cp-kafka:7.7.1
     container_name: kafka3
     hostname: kafka3
     ports:
@@ -155,7 +155,7 @@ services:
       CONNECT_REST_ADVERTISED_HOST_NAME: "localhost"
       CONNECT_PLUGIN_PATH: "/usr/share/java,/etc/kafka-connect/jars"
     volumes:
-      - ../jars/debezium-connector-postgres:/etc/kafka-connect/jars
+      - ../jars/:/etc/kafka-connect/jars
     ports:
       - "8083:8083"
     healthcheck:
@@ -234,6 +234,7 @@ services:
     command: taskmanager
     volumes:
       - ../flink_data:/tmp/
+      - /workspaces/local-data-streaming/jars/flink_lib/flink-sql-connector-kafka-3.3.0-1.20.jar:/opt/flink/lib/flink-sql-connector-kafka-3.3.0-1.20.jar
     environment:
       - |
         FLINK_PROPERTIES=
@@ -251,7 +252,10 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
-      KAFKA_CONNECT_CONNECTOR_NAME: ${KAFKA_CONNECT_CONNECTOR_NAME}
+      POSTGRES_HOST: ${POSTGRES_HOST}
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      KAFKA_CONNECT_CONNECTOR_SOURCE_NAME: ${KAFKA_CONNECT_CONNECTOR_SOURCE_NAME}
+      KAFKA_CONNECT_CONNECTOR_SINK_NAME: ${KAFKA_CONNECT_CONNECTOR_SINK_NAME}
       KAFKA_CONNECT_IMAGE_NAME: 'kafka-connect'
       PYTHONUNBUFFERED: 1
     volumes:

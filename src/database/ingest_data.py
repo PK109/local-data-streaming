@@ -23,14 +23,11 @@ def ingest_data(data_path, record_rate = 10):
 
 
 if __name__ == '__main__':
+    
     env_path = '/app/.env'
     load_dotenv(dotenv_path=env_path)
-    try:
-        record_rate = int(os.getenv("RECORD_RATE"))
-        print(f"\nSimulation with the rate of {record_rate} records per second.")
-    except:
-        record_rate = 10
-        print("\nSimulation with default 10 record rate.")
+    record_rate = int(os.getenv("RECORD_RATE","10"))
+    print(f"\nSimulation start with the rate of {record_rate} records per second.")
 
     path = '/rides_data/'
     name = 'taxi_data.parquet'

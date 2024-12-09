@@ -131,7 +131,7 @@ dmypy.json
 cython_debug/
 
 # folder with jar connectors
-jars/debezium-connector-postgres
+jars/*
 
 # Data files
 *.parquet

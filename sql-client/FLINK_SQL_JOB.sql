@@ -3,7 +3,6 @@
 INSERT INTO joined_yellow_taxi
   SELECT 
       `VendorID`
-    -- , PROCTIME() AS `proc_time` 
     , `tpep_pickup_datetime` 
     , TO_TIMESTAMP_LTZ(tpep_pickup_datetime/1000, 3) as `tpep_pickup_ts`
     , `tpep_dropoff_datetime`
@@ -55,23 +54,4 @@ INSERT INTO yellow_zones_stats
     window_start, PULocationID
   HAVING
     COUNT(`VendorID`) >= 10;
-
-
--- INSERT INTO yellow_zones_stats
---   SELECT 
---       window_start,
---       MIN(PUZone) AS `zone name`,
---       COUNT(`VendorID`) as `trips count`,
---       MAX(`tpep_pickup_ts`) AS `last ride`,
---       MAX(CURRENT_WATERMARK(`tpep_pickup_ts`)) AS `Watermark`,
---       MAX(TIMESTAMPDIFF(MINUTE, CURRENT_WATERMARK(`tpep_pickup_ts`), `tpep_pickup_ts`)) as `min diff`,
---       MAX(`proc_time`) as `proc_time`,
---       ROUND(SUM(`total_amount`)) as `tumble earn`
---   FROM TABLE(
---     TUMBLE(TABLE joined_yellow_taxi, DESCRIPTOR(tpep_pickup_ts), INTERVAL '1' HOUR ) )
---   WHERE 
---     TIMESTAMPDIFF(HOUR,CURRENT_WATERMARK(`tpep_pickup_ts`),`tpep_pickup_ts`) <2
---   GROUP BY 
---     window_start, PULocationID
---   HAVING
---     COUNT(`VendorID`) >= 10;
+    
