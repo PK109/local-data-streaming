@@ -134,10 +134,6 @@ services:
     image: confluentinc/cp-kafka-connect:7.7.1
     container_name: kafka-connect
     hostname: kafka-connect
-    # depends_on:
-    #   - kafka1
-    #   - kafka2
-    #   - kafka3
     environment:
       CONNECT_BOOTSTRAP_SERVERS: kafka1:29092,kafka2:29092,kafka3:29092
       CONNECT_REST_PORT: 8083
@@ -209,8 +205,8 @@ services:
     ports:
       - "8081:8081"
     command: jobmanager
-    volumes:
-      - ../flink_data:/tmp/
+    # volumes:
+    #   - ../flink_data:/tmp/
     environment:
       - |
         FLINK_PROPERTIES=
@@ -233,7 +229,7 @@ services:
       - jobmanager
     command: taskmanager
     volumes:
-      - ../flink_data:/tmp/
+      # - ../flink_data:/tmp/
       - /workspaces/local-data-streaming/jars/flink_lib/flink-sql-connector-kafka-3.3.0-1.20.jar:/opt/flink/lib/flink-sql-connector-kafka-3.3.0-1.20.jar
     environment:
       - |
